@@ -2,13 +2,26 @@ pipeline {
   agent {
     docker {
       image 'python:3.11'
-      args '-u 0:0 -v /var/run/docker.sock:/var/run/docker.sock'
+      // รัน container ด้วย user ของ Jenkins (1000:1000)
+      args '-u 1000:1000 -v /var/run/docker.sock:/var/run/docker.sock'
     }
+  }
+
+  // ป้องกัน Python สร้าง .pyc
+  environment {
+    PYTHONDONTWRITEBYTECODE = '1'
   }
 
   options { timestamps() }
 
   stages {
+
+    stage('Clean Workspace') {
+      steps {
+        // ล้างไฟล์ทั้งหมดใน workspace เดิมก่อนเริ่ม checkout
+        deleteDir()
+      }
+    }
 
     stage('Install Base Tooling') {
       steps {
@@ -94,8 +107,6 @@ pipeline {
           withCredentials([string(credentialsId: 'fast-api-token', variable: 'SONAR_TOKEN')]) {
             sh '''
               set -eux
-              # รันสแกนเนอร์จากใน agent (เห็นไฟล์แน่นอน)
-              # ถ้ามีไฟล์ sonar-project.properties จะถูกใช้โดยอัตโนมัติ
               sonar-scanner \
                 -Dsonar.host.url="$SONAR_HOST_URL" \
                 -Dsonar.login="$SONAR_TOKEN" \
@@ -113,7 +124,6 @@ pipeline {
       }
     }
 
-    // ต้องตั้ง webhook บน SonarQube -> http(s)://<JENKINS_URL>/sonarqube-webhook/
     stage('Quality Gate') {
       steps {
         timeout(time: 10, unit: 'MINUTES') {
@@ -139,5 +149,9 @@ pipeline {
     }
   }
 
-  post { always { echo "Pipeline finished" } }
+  post {
+    always {
+      echo "Pipeline finished"
+    }
+  }
 }

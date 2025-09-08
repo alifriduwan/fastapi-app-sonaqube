@@ -8,10 +8,6 @@ pipeline {
 
   options { timestamps() }
 
-  parameters {
-    string(name: 'GIT_BRANCH', defaultValue: 'feature/sonar-tune', description: 'Branch to build (e.g. main or feature/sonar-tune)')
-  }
-
   stages {
 
     stage('Install Base Tooling') {
@@ -20,13 +16,11 @@ pipeline {
           set -eux
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            git wget unzip ca-certificates docker-cli default-jre-headless build-essential
+            git wget unzip ca-certificates docker-cli default-jre-headless
 
           command -v git
           command -v docker
           docker --version
-          docker version
-          docker info || true
           java -version || true
 
           SCAN_VER=7.2.0.5079
@@ -64,24 +58,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        // ใช้พารามิเตอร์แทนการ hardcode
-        git branch: "${params.GIT_BRANCH}", url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
-      }
-    }
-
-    stage('Verify Checkout') {
-      steps {
-        sh '''
-          set -eux
-          echo "Requested branch (param)  : $GIT_BRANCH"
-          echo "Remote URL                : $(git config --get remote.origin.url)"
-          echo "Local HEAD (short SHA)    : $(git rev-parse --short HEAD)"
-          echo "Last commit on HEAD       :"
-          git show -s --format='%h %ad %an %s' --date=iso-strict HEAD
-
-          echo "Remote HEAD for branch    :"
-          git ls-remote origin "refs/heads/$GIT_BRANCH" | awk '{print "  " $1 "  " $2}'
-        '''
+        git branch: 'feature/sonar-tune', url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
       }
     }
 
@@ -117,10 +94,11 @@ pipeline {
           withCredentials([string(credentialsId: 'fast-api-token', variable: 'SONAR_TOKEN')]) {
             sh '''
               set -eux
+              # รันสแกนเนอร์จากใน agent (เห็นไฟล์แน่นอน)
               # ถ้ามีไฟล์ sonar-project.properties จะถูกใช้โดยอัตโนมัติ
               sonar-scanner \
                 -Dsonar.host.url="$SONAR_HOST_URL" \
-                -Dsonar.token="$SONAR_TOKEN" \
+                -Dsonar.login="$SONAR_TOKEN" \
                 -Dsonar.projectBaseDir="$PWD" \
                 -Dsonar.projectKey=FastAPI-app \
                 -Dsonar.projectName="FastAPI-app" \
@@ -128,8 +106,7 @@ pipeline {
                 -Dsonar.tests=tests \
                 -Dsonar.python.version=3.11 \
                 -Dsonar.python.coverage.reportPaths=coverage.xml \
-                -Dsonar.sourceEncoding=UTF-8 \
-                -Dsonar.branch.name="$GIT_BRANCH"
+                -Dsonar.sourceEncoding=UTF-8
             '''
           }
         }

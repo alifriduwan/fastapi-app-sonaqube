@@ -6,7 +6,7 @@ pipeline {
         }
     }
     environment {
-        SONARQUBE = credentials('sonarqube-token-fastapi-app')
+        SONARQUBE = credentials('fast-api-token')
     }
     stages {
         stage('Checkout') {
@@ -34,7 +34,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube-25') {
+                withSonarQubeEnv('Sonarqube') {
                     sh 'sonar-scanner'
                 }
             }

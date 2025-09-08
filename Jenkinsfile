@@ -22,7 +22,7 @@ pipeline {
                 sh '''
                     pip install --upgrade pip
                     pip install -r requirements.txt || true
-                    pip install fastapi uvicorn pytest pytest-cov coverage requests
+                    pip install fastapi uvicorn pytest pytest-cov coverage requests httpx
                 '''
             }
         }
@@ -35,7 +35,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('sonarqube-25') {
                     sh '''
                         sonar-scanner \
                           -Dsonar.projectKey=FastAPI-app \

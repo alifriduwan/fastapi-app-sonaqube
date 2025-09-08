@@ -58,7 +58,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git branch: 'feature', url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
+        git branch: 'feature/test', url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
       }
     }
 

@@ -6,7 +6,7 @@ pipeline {
         }
     }
     environment {
-        SONARQUBE = credentials('sonarqube_token')
+        SONARQUBE = credentials('sonarqube-token-fastapi-app')
     }
     stages {
         stage('Checkout') {

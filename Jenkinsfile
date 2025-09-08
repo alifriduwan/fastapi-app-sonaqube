@@ -58,7 +58,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git branch: 'main', url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
+        git branch: 'feature/sonar-tune', url: 'https://github.com/alifriduwan/fastapi-app-sonaqube'
       }
     }
 

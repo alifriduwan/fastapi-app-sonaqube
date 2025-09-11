@@ -23,6 +23,7 @@ pipeline {
           docker --version
           java -version || true
 
+          # ---- Install SonarScanner CLI (fallback หลายชื่อไฟล์ กัน 404) ----
           SCAN_VER=7.2.0.5079
           BASE_URL="https://binaries.sonarsource.com/Distribution/sonar-scanner-cli"
 
@@ -90,8 +91,8 @@ pipeline {
 
     stage('SonarQube Analysis') {
       steps {
-        withSonarQubeEnv('Sonarqube') {
-          withCredentials([string(credentialsId: 'fast-api-token', variable: 'SONAR_TOKEN')]) {
+        withSonarQubeEnv('SonarQube') {
+          withCredentials([string(credentialsId: 'FastApi', variable: 'SONAR_TOKEN')]) {
             sh '''
               set -eux
               # รันสแกนเนอร์จากใน agent (เห็นไฟล์แน่นอน)
@@ -100,8 +101,8 @@ pipeline {
                 -Dsonar.host.url="$SONAR_HOST_URL" \
                 -Dsonar.login="$SONAR_TOKEN" \
                 -Dsonar.projectBaseDir="$PWD" \
-                -Dsonar.projectKey=FastAPI-app \
-                -Dsonar.projectName="FastAPI-app" \
+                -Dsonar.projectKey=TestFastApi \
+                -Dsonar.projectName="TestFastApi" \
                 -Dsonar.sources=app \
                 -Dsonar.tests=tests \
                 -Dsonar.python.version=3.11 \
